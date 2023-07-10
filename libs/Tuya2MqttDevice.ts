@@ -6,4 +6,6 @@ export class Tuya2MqttDevice {
         protected mqtt: LightweightMqtt,
         protected tuya_device: GenericTuyaDevice
     ) { }
+
+    init() { }
 }

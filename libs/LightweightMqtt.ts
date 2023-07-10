@@ -15,12 +15,12 @@ export class LightweightMqtt {
 
     static async connect(config: IClientOptions) {
         const client = connect(config)
-        await new Promise(s => client.on('connect', s))
+        await new Promise(s => client.on('connect', s)) 
         return new this(client)
     }
 
 
-    liten<T = string>(topic) {
+    listen<T = string>(topic) {
         this.client.subscribe(topic)
         const id = randomUUID()
         !this.#listeners.has(topic) && this.#listeners.set(topic, new Map())
@@ -35,8 +35,8 @@ export class LightweightMqtt {
     }
 
 
-    publish(topic: string, payload: string, options?: IClientPublishOptions) {
-        return this.client.publish(topic, payload, options || {})
+    publish<T extends string | number | boolean>(topic: string, payload: T, options?: IClientPublishOptions) {
+        return this.client.publish(topic, Buffer.from(`${payload}`), options || {})
     }
 
 }
