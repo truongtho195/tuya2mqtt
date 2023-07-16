@@ -10,7 +10,7 @@ export class Tuya2MqttCurtain extends Tuya2MqttDevice {
         const dev = new MqttEntity({
             name: this.tuya_device.name,
             device_class: 'cover',
-            device_id: this.tuya_device.id,
+            device_id: this.tuya_device.device_id,
             mqtt: this.mqtt
         })
         const state = dev.add_state('state')
@@ -23,23 +23,23 @@ export class Tuya2MqttCurtain extends Tuya2MqttDevice {
             position_open: 100
         })
         set_possion.subscribe(p => {
-            this.tuya_device.$trigger.next({ '2': 100 - Number(p) })
+            this.tuya_device.set_dps({ '2': 100 - Number(p) })
         })
         command.subscribe(cmd => {
             if (cmd == 'STOP') {
-                this.tuya_device.$trigger.next({ '1': 'stop' })
+                this.tuya_device.set_dps({ '1': 'stop' })
             }
             if (cmd == 'CLOSE') {
                 state.update('closing')
-                this.tuya_device.$trigger.next({ '1': 'closed' })
+                this.tuya_device.set_dps({ '1': 'closed' })
             }
 
             if (cmd == 'OPEN') {
                 state.update('opening')
-                this.tuya_device.$trigger.next({ '1': 'open' })
+                this.tuya_device.set_dps({ '1': 'open' })
             }
         })
-        this.tuya_device.$state.subscribe(async dps => {
+        this.tuya_device.$dps.subscribe(async dps => {
             console.log({ [this.tuya_device.name]: dps })
             this.#timer && clearTimeout(this.#timer)
             if (dps[1] != undefined) {
