@@ -40,11 +40,7 @@ export type DpsUpdate = {
     t: number
 }
 
-export type ApiCredential = {
-    key: string,
-    secret: string,
-    region?: string
-}
+
 
 export class TuyaConnection {
 

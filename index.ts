@@ -1,52 +1,42 @@
 import { LightweightMqtt } from './libs/tuya2mqtt/LightweightMqtt'
-import { Tuya2MqttDevice } from './libs/tuya2mqtt/Tuya2MqttDevice'
 import { TuyaSupportDevices } from './libs/tuya2mqtt/TuyaSupportDevices'
 import { TuyaDeviceManager } from './libs/tuyapi/TuyaDeviceManager'
-import devices from './bin/devices.json' assert {type: 'json'}
-import { TuyaDevice, TuyaDeviceConfig } from './libs/tuyapi/TuyaConnection'
 
 console.log('Running')
-const mqtt = await LightweightMqtt.connect({
-    host: 'localhost',
-    port: 10000,
-    username: 'ba',
-    password: 'Duongvanba1997@'
+
+const require_params = ['MQTT_HOST', 'MQTT_PORT', 'MQTT_USERNAME', 'MQTT_PASSWORD', 'API_KEY', 'API_SECRET', 'USER_ID']
+require_params.forEach(key => {
+    if (!process.env[key]) throw new Error(`MISSING ENV ${key}`)
 })
+
+
+const mqtt = await LightweightMqtt.connect({
+    host: process.env.MQTT_HOST!,
+    port: Number(process.env.MQTT_PORT!),
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD
+})
+
 console.log('MQTT connected')
 
+
 const tuya_device_manager = new TuyaDeviceManager({
-    key: '',
-    secret: ''
+    key: process.env.API_KEY!,
+    secret: process.env.API_SECRET!,
+    user_id: process.env.USER_ID!
 })
 
-function capitalizeFirstChar(string) {
-    if (typeof string !== 'string') {
-        throw new Error('Input must be a string');
-    }
-
-    if (string.length === 0) {
-        return string;
-    }
-
-    const firstChar = string.charAt(0).toUpperCase();
-    const remainingChars = string.slice(1);
-
-    return firstChar + remainingChars;
-}
 
 
 tuya_device_manager.new_devices.subscribe(
     async tuya_device => {
-        if (tuya_device.parent?.endsWith('kqxa') || tuya_device.ip.startsWith('192.168.2')) {
-            const factory = TuyaSupportDevices[tuya_device.category] as typeof TuyaSupportDevices[keyof typeof TuyaSupportDevices]
-            if (!factory) return
-            const t2mdev = new factory(mqtt, tuya_device)
-            await t2mdev.init()
-        }
+        const factory = TuyaSupportDevices[tuya_device.category] as typeof TuyaSupportDevices[keyof typeof TuyaSupportDevices]
+        if (!factory) return
+        tuya_device.name = `${tuya_device.name[0].toUpperCase}${tuya_device.name.slice(1)}`
+        const t2mdev = new factory(mqtt, tuya_device)
+        await t2mdev.init()
     }
 )
 
 
-tuya_device_manager.start(
-    devices.map(d => ({ ...d, local_key: d.key, device_id: d.id, name: capitalizeFirstChar(d.name) } as TuyaDeviceConfig))
-) 
+tuya_device_manager.start() 
