@@ -1,6 +1,7 @@
 import { Socket, connect } from 'net'
 import { BehaviorSubject, Observable, Subject, filter, firstValueFrom, fromEvent, interval, map, merge, mergeAll, mergeMap, tap, timer } from 'rxjs'
 import { CommandType, MessageParser } from './message-parser'
+import { execSync } from 'child_process'
 
 export type TuyaDeviceConfig = {
     device_id: string,
@@ -12,6 +13,7 @@ export type TuyaDeviceConfig = {
     node_id?: string
     parent?: string
     name: string
+    mac: string
     mapping: {
         [key: string]: {
             code: string,
@@ -74,18 +76,24 @@ export class TuyaConnection {
 
     #seq_number = 100
     async connect(ip = this.config.ip) {
-        if (this.$status.value == 'connecting') return
+        if (this.$status.value == 'connecting' || this.$status.value == 'online') return
+        this.$status.next('connecting')
         for (let i = 1; i <= 5; i++) {
             const socket = connect({
                 host: ip,
                 port: this.config.port || 6668
             })
-
+try{
+            execSync(`sudo arp -s ${this.config.ip} ${this.config.mac}`)
+}catch(e){}
             const connected = await new Promise<boolean>(s => {
                 socket.on('connect', () => s(true))
                 socket.on('error', () => s(false))
             })
-            if (!connected) continue
+            if (!connected) {
+                console.log(`Can not connect to ${this.config.name}, retrying ...`)
+                continue
+            }
 
             // Map request
             const requester = this.#$request.subscribe(({ payload, on_success }) => {
@@ -115,19 +123,20 @@ export class TuyaConnection {
             })
 
             this.$status.next('online')
+            console.log(`[${this.config.name}] ONLINE`)
 
             const pinger = interval(10000).subscribe(
                 () => this.#ping()
             )
 
+
             firstValueFrom(
                 merge(
-                    fromEvent(socket, 'close'),
-                    fromEvent(socket, 'end'),
+                    // fromEvent(socket, 'close').pipe(map(() => 'close')),
                     fromEvent(socket, 'error'),
                 )
-            ).then(() => {
-                console.log(`[${this.config.name}] offline`)
+            ).then((e) => {
+                console.log(`[${this.config.name}] offline`, e)
                 requester.unsubscribe()
                 responder.unsubscribe()
                 pinger.unsubscribe()

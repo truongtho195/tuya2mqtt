@@ -65,7 +65,7 @@ export class TuyaDeviceManager {
     async #setup_device(device_id: string, local_ip: string) {
         const running_connection = this.#connections.get(device_id)
         if (running_connection) {
-            running_connection.$status.value == 'offline' && running_connection.connect(local_ip)
+            running_connection.connect(local_ip)
             return
         }
         const cloud_device = this.#cloud_devices.get(device_id)
