@@ -1,5 +1,13 @@
 # Hi there
-This is small nodejs code to connect tuya devices to home assistant. Script will pull all devices from tuya cloud then connect with home assistant using local socket in your LAN network. Current support wifi and zigbee hub (with attached devices): switch, sensor, sence button, curtain (we are working to support more device in furture)
+This is small nodejs code to connect tuya devices to home assistant. Script will pull all devices from tuya cloud then connect with home assistant using local socket in your LAN network
+Feature: 
+- Support switch, binary sensor, presence sensor, curtain, sence switch button
+- Support zigbee device 
+- Automatic pull devices config from tuya cloud
+- Auto setup to home assistant via MQTT discovery
+- Near realtime state update/control
+- Auto add ARP record => fix offline problem
+- Auto reconnect after device offline (you can test by turn off then turn device on)
 
 # Requirement
 - Nodejs 

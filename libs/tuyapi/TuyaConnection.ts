@@ -79,9 +79,9 @@ export class TuyaConnection {
                 host: ip,
                 port: this.config.port || 6668
             })
-try{
-            execSync(`sudo arp -s ${this.config.ip} ${this.config.mac}`)
-}catch(e){}
+            try {
+                execSync(`sudo arp -s ${this.config.ip} ${this.config.mac}`)
+            } catch (e) { }
             const connected = await new Promise<boolean>(s => {
                 socket.on('connect', () => s(true))
                 socket.on('error', () => s(false))
