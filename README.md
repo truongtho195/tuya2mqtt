@@ -26,9 +26,17 @@ npm i typescript ts-node
 npm run build
 ```
 # Run
+With yarn
 ```bash
 MQTT_HOST=(your mqtt host) MQTT_PORT=(your mqtt port) MQTT_USERNAME=(your mqtt username) MQTT_PASSWORD=(your mqtt password) API_KEY=(your tuya api key) API_SECRET=(your tuya secret) USER_ID=(tuya user id from tuya developer account) yarn start
 ```
+
+With NPM
+```bash
+MQTT_HOST=(your mqtt host) MQTT_PORT=(your mqtt port) MQTT_USERNAME=(your mqtt username) MQTT_PASSWORD=(your mqtt password) API_KEY=(your tuya api key) API_SECRET=(your tuya secret) USER_ID=(tuya user id from tuya developer account) npm run start
+```
+
+
 You can install screen to run above script in background
 ```bash
 sudo apt-get install screen
